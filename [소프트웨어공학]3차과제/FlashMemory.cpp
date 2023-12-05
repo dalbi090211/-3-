@@ -2,10 +2,10 @@
 #define SECTOR_BYTE 512
 #define TEXT_FILE "test.txt"
 
-#include<string>
-#include<iostream>
-#include<algorithm>	//remove함수 사용
-#include<vector>		//erase사용
+#include <string>
+#include <iostream>
+#include <algorithm>	//remove함수 사용
+#include <vector>		//erase사용
 
 #include"FlashMemory.h"
 
@@ -35,9 +35,7 @@ void flashMemory::init(int blockMax) {
 			fputs("\n", writeBuffer);
 		}
 	}
-
 	fclose(writeBuffer);
-
 }
 
 /*
@@ -46,27 +44,21 @@ void flashMemory::init(int blockMax) {
 string flashMemory::read(int sectorNum) {
 
 	readBuffer = fopen(TEXT_FILE, "r+");
-	bool spaceTrigger = false;
 	char result[SECTOR_BYTE] = "";
 	fseek(readBuffer, sectorNum * SECTOR_BYTE, SEEK_SET);		//파일의 가장 처음위치부터 sectorNum * 섹터의 바이트만큼 파일 포인터의 위치를 이동
 	fgets(result, SECTOR_BYTE, readBuffer);
+	fclose(readBuffer);
 	string strResult(result);	//fgets로 읽은 char형 배열 string으로 변환(string라이브러리 함수 사용하기 위해서)
-
+	
 	//debug
 	cout << "before strResult : " << strResult << endl;
 
-	strResult.erase(remove(strResult.begin(), strResult.end(), " "), strResult.end());	//remove를 통해 공백을, erase를 통해 비어있는 문자열을 제거
+	strResult.erase(remove(strResult.begin(), strResult.end(), string::npos), strResult.end());	//remove를 통해 공백을, erase를 통해 비어있는 문자열을 제거
 	
 	//debug
 	cout << "after strResult : " << strResult << endl;
 
-	for (int i = 0; i < (int)strlen(result); i++) {
-		if (isspace(result[i]) != 0) {
-			spaceTrigger = true;
-		}
-	}
-
-	if (spaceTrigger) {
+	if (strResult.find("\n") == string::npos) {
 		return strResult;
 	}
 	else {
@@ -89,19 +81,18 @@ void flashMemory::write(int sectorNum, string inputData) {
 	readBuffer = fopen(TEXT_FILE, "r+");
 	fseek(readBuffer, sectorNum * SECTOR_BYTE, SEEK_SET);		
 	fgets(result, SECTOR_BYTE, readBuffer);
-	string strResult(result);	//fgets로 읽은 char형 배열 string으로 변환(string라이브러리 함수 사용하기 위해서)
 	fclose(readBuffer);
+	string strResult(result);	//fgets로 읽은 char형 배열 string으로 변환(string라이브러리 함수 사용하기 위해서)
 
 	/*	읽어온 데이터가 있다면 종료, 없다면 입력받은 데이터를 저장	*/	
 	//debug
 	cout << "before strResult : " << strResult << endl;
 	
-	strResult.erase(remove(strResult.begin(), strResult.end(), " "), strResult.end());	//remove를 통해 공백을, erase를 통해 비어있는 문자열을 제거
+	strResult.erase(remove(strResult.begin(), strResult.end(), string::npos), strResult.end());	//remove를 통해 공백을, erase를 통해 비어있는 문자열을 제거
 	
 	//debug
 	cout << "after strResult : " << strResult << endl;
-
-	if (!strResult.empty()) {
+	if (strResult.find("\n") == string::npos) {
 		cout << "error : 이미 메모리가 존재합니다." << endl;
 	}
 	else {
